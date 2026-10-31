@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NEON SURGE – Can you survive?</title>
+  <meta name="description" content="NEON SURGE – the addictive neon lane-dodge survival game. How long can you last? Challenge your friends and beat your high score!" />
+  <meta property="og:title" content="NEON SURGE – Can you beat my score?" />
+  <meta property="og:description" content="I just scored on NEON SURGE! Think you can beat it?" />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Particle background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- ===== START SCREEN ===== -->
+  <div id="startScreen" class="screen active">
+    <div class="screen-inner">
+      <div class="logo-wrap">
+        <div class="logo-glow"></div>
+        <h1 class="game-title">NEON<br/><span>SURGE</span></h1>
+        <p class="tagline">Dodge. Survive. Dominate.</p>
+      </div>
+
+      <div class="stats-bar glass-card">
+        <div class="stat">
+          <span class="stat-label">BEST</span>
+          <span class="stat-value" id="startBest">0</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-label">STREAK</span>
+          <span class="stat-value" id="startStreak">0🔥</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-label">GAMES</span>
+          <span class="stat-value" id="startGames">0</span>
+        </div>
+      </div>
+
+      <!-- Daily Challenge -->
+      <div class="daily-challenge glass-card" id="dailyChallengeCard">
+        <div class="dc-icon">🎯</div>
+        <div class="dc-text">
+          <span class="dc-label">DAILY CHALLENGE</span>
+          <span class="dc-desc" id="dailyChallengeDesc">Score 500 points</span>
+        </div>
+        <div class="dc-reward" id="dailyReward">🏆</div>
+      </div>
+
+      <!-- Theme selector -->
+      <div class="theme-row">
+        <span class="theme-label">THEME</span>
+        <div class="theme-buttons">
+          <button id="themeNeon" class="theme-btn active" data-theme="neon" title="Neon">⚡</button>
+          <button id="themeCyber" class="theme-btn" data-theme="cyber" title="Cyber">🟢</button>
+          <button id="themeFlame" class="theme-btn locked" data-theme="flame" title="Flame (Unlock: 1000pts)">🔥<span class="lock-icon">🔒</span></button>
+          <button id="themeVoid" class="theme-btn locked" data-theme="void" title="Void (Unlock: 2500pts)">🌌<span class="lock-icon">🔒</span></button>
+        </div>
+      </div>
+
+      <div class="button-stack">
+        <button id="startBtn" class="btn btn-primary pulse-glow">
+          <span class="btn-icon">▶</span> PLAY NOW
+        </button>
+        <button id="leaderboardBtn" class="btn btn-secondary">
+          🏆 LEADERBOARD
+        </button>
+      </div>
+
+      <div class="controls-hint">
+        <span>⬅ ➡ Arrow Keys</span>
+        <span class="sep">|</span>
+        <span>A / D Keys</span>
+        <span class="sep">|</span>
+        <span>👆 Swipe / Tap</span>
+      </div>
+
+      <button id="muteBtn" class="mute-btn" title="Toggle Sound">🔊</button>
+    </div>
+  </div>
+
+  <!-- ===== COUNTDOWN SCREEN ===== -->
+  <div id="countdownScreen" class="screen">
+    <div class="countdown-wrap">
+      <div class="countdown-num" id="countdownNum">3</div>
+      <p class="countdown-sub">Get Ready!</p>
+    </div>
+  </div>
+
+  <!-- ===== GAME SCREEN ===== -->
+  <div id="gameScreen" class="screen">
+    <div class="hud">
+      <div class="hud-left">
+        <div class="hud-score-wrap">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-score" id="hudScore">0</span>
+        </div>
+        <div class="hud-best-wrap">
+          <span class="hud-label">BEST</span>
+          <span class="hud-best" id="hudBest">0</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="combo-display" id="comboDisplay"></div>
+        <div class="achievement-popup" id="achievementPopup"></div>
+      </div>
+      <div class="hud-right">
+        <div class="shield-indicator" id="shieldIndicator" style="display:none">🛡️</div>
+        <div class="slow-indicator" id="slowIndicator" style="display:none">⏱️</div>
+        <button id="pauseBtn" class="pause-btn">⏸</button>
+      </div>
+    </div>
+
+    <!-- Game canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Mobile controls -->
+    <div class="mobile-controls">
+      <button id="leftBtn" class="mc-btn mc-left">◀</button>
+      <button id="rightBtn" class="mc-btn mc-right">▶</button>
+    </div>
+  </div>
+
+  <!-- ===== PAUSE SCREEN ===== -->
+  <div id="pauseScreen" class="screen">
+    <div class="pause-wrap glass-card">
+      <h2 class="pause-title">PAUSED</h2>
+      <div class="pause-score-row">
+        <span>Current Score</span>
+        <span class="pause-score-val" id="pauseScore">0</span>
+      </div>
+      <div class="pause-buttons">
+        <button id="resumeBtn" class="btn btn-primary">▶ RESUME</button>
+        <button id="restartFromPauseBtn" class="btn btn-secondary">↺ RESTART</button>
+        <button id="quitBtn" class="btn btn-ghost">🏠 QUIT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GAME OVER SCREEN ===== -->
+  <div id="gameOverScreen" class="screen">
+    <div class="go-inner">
+      <div class="go-header">
+        <div class="go-title-wrap">
+          <h2 class="go-title" id="goTitle">GAME OVER</h2>
+          <p class="go-subtitle" id="goSubtitle">Better luck next time!</p>
+        </div>
+      </div>
+
+      <!-- Score card (shareable) -->
+      <div class="score-card glass-card" id="scoreCard">
+        <div class="sc-header">
+          <span class="sc-game-name">⚡ NEON SURGE</span>
+          <span class="sc-badge" id="scBadge">SURVIVOR</span>
+        </div>
+        <div class="sc-score-wrap">
+          <span class="sc-label">SCORE</span>
+          <div class="sc-score" id="goScore">0</div>
+        </div>
+        <div class="sc-stats-row">
+          <div class="sc-stat">
+            <span class="sc-stat-val" id="goDistance">0m</span>
+            <span class="sc-stat-label">DISTANCE</span>
+          </div>
+          <div class="sc-stat">
+            <span class="sc-stat-val" id="goObstacles">0</span>
+            <span class="sc-stat-label">DODGED</span>
+          </div>
+          <div class="sc-stat">
+            <span class="sc-stat-val" id="goMaxCombo">0x</span>
+            <span class="sc-stat-label">MAX COMBO</span>
+          </div>
+        </div>
+        <div class="sc-record" id="scRecord" style="display:none">
+          🎉 NEW PERSONAL BEST!
+        </div>
+        <div class="sc-daily" id="scDaily" style="display:none">
+          🎯 Daily Challenge Completed!
+        </div>
+      </div>
+
+      <!-- Achievements unlocked -->
+      <div class="go-achievements" id="goAchievements"></div>
+
+      <!-- Share & action buttons -->
+      <div class="go-actions">
+        <button id="shareBtn" class="btn btn-primary share-btn">
+          📤 Share Score
+        </button>
+        <button id="challengeBtn" class="btn btn-secondary">
+          ⚔️ Challenge Friend
+        </button>
+      </div>
+      <div class="go-actions go-actions-2">
+        <button id="restartBtn" class="btn btn-accent pulse-glow">
+          ↺ ONE MORE TRY!
+        </button>
+        <button id="goHomeBtn" class="btn btn-ghost">🏠 HOME</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LEADERBOARD SCREEN ===== -->
+  <div id="leaderboardScreen" class="screen">
+    <div class="lb-wrap">
+      <div class="lb-header">
+        <h2 class="lb-title">🏆 LEADERBOARD</h2>
+        <button id="lbCloseBtn" class="lb-close">✕</button>
+      </div>
+      <div class="lb-tabs">
+        <button class="lb-tab active" data-tab="local" id="tabLocal">Local</button>
+        <button class="lb-tab" data-tab="global" id="tabGlobal">Global</button>
+      </div>
+      <div class="lb-list" id="lbList"></div>
+      <div class="lb-your-best">
+        <span>Your Best:</span>
+        <span class="lb-your-score" id="lbYourBest">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SHARE MODAL ===== -->
+  <div id="shareModal" class="modal-overlay" style="display:none">
+    <div class="modal-box glass-card">
+      <h3 class="modal-title">📤 Share Your Score</h3>
+      <div class="share-preview" id="sharePreview">
+        <div class="sp-line1">⚡ NEON SURGE</div>
+        <div class="sp-score" id="spScore">0</div>
+        <div class="sp-line3">Can you beat me? 🔥</div>
+        <div class="sp-link">play.neonsurge.io</div>
+      </div>
+      <div class="share-options">
+        <button class="share-opt-btn" id="shareNative" style="display:none">📱 Share</button>
+        <button class="share-opt-btn" id="copyLinkBtn">🔗 Copy Link</button>
+        <button class="share-opt-btn" id="shareTwitterBtn">🐦 Twitter/X</button>
+        <button class="share-opt-btn" id="shareWhatsappBtn">💬 WhatsApp</button>
+      </div>
+      <button class="modal-close" id="shareModalClose">✕ Close</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
